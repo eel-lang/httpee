@@ -24,9 +24,10 @@ class EelangPipelineTests(unittest.TestCase):
     def test_post_with_assert_pattern(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import POST, headers, Response
+from httpee import POST, data, headers, httpee, Response
 user =
-    {{'name': 'kenneth', 'role': 'admin'}}
+    httpee()
+    ..data: {{'name': 'kenneth', 'role': 'admin'}}
     ..headers: {{'X-Test': 'yes'}}
     ..POST: '{srv.url}/users'
     ..assert:
@@ -34,7 +35,7 @@ user =
 ''')
             req = srv.requests[0]
             self.assertEqual(req['body'], 'name=kenneth&role=admin')
-            self.assertEqual(req['headers']['X-Test'], 'yes')
+            self.assertEqual(req['headers']['x-test'], 'yes')
             self.assertEqual(ns['user'].json()['echo']['method'], 'POST')
 
     def test_get_without_body(self):
@@ -111,10 +112,11 @@ verdict =
     def test_send_with_dynamic_method(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import send, method, url, Response
+from httpee import send, data, method, url, httpee, Response
 m = 'PATCH'
 r =
-    {{'v': 1}}
+    httpee()
+    ..data: {{'v': 1}}
     ..method: m
     ..url: '{srv.url}/thing'
     ..send()
@@ -137,12 +139,13 @@ r =
 ''')
             self.assertEqual(srv.requests[0]['body'], '{"nested":[1,2]}')
 
-    def test_body_as_initial_value_like_readme(self):
+    def test_form_body_via_data(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import GET, headers, Response
+from httpee import GET, data, headers, httpee, Response
 r =
-    {{'some': 'json'}}
+    httpee()
+    ..data: {{'some': 'json'}}
     ..headers: {{'X-A': '1'}}
     ..GET: '{srv.url}/form'
     ..assert:
@@ -154,8 +157,9 @@ r =
     def test_bare_pipeline_without_assignment(self):
         with TestServer() as srv:
             run(f'''
-from httpee import send, method, url, Response
-{{'v': 1}}
+from httpee import send, data, method, url, httpee, Response
+httpee()
+..data: {{'v': 1}}
 ..method: 'PATCH'
 ..url: '{srv.url}/thing'
 ..send()

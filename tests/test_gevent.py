@@ -27,8 +27,8 @@ class GeventTests(unittest.TestCase):
 import gevent.monkey
 gevent.monkey.patch_all()
 import sys
-from httpee import GET, Response
-r = GET(sys.argv[1], None)
+from httpee import GET, httpee, Response
+r = GET(sys.argv[1], httpee())
 assert isinstance(r, Response)
 print('status', r.status)
 '''

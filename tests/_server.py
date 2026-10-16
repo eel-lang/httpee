@@ -18,7 +18,7 @@ class EchoHandler(BaseHTTPRequestHandler):
         self.server.requests.append({
             'method': self.command,
             'path': self.path,
-            'headers': dict(self.headers.items()),
+            'headers': {k.lower(): v for k, v in self.headers.items()},
             'body': body.decode('utf-8', 'replace'),
         })
         if self.server.delay:
