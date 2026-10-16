@@ -1,16 +1,11 @@
 # httpee
 
-`httpee` is a thin wrapper around [httpx](https://www.python-httpx.org/) for
+`httpee` is a thin wrapper around [fetch.py](https://github.com/kennethreitz/fetch.py) for
 [eelang](https://github.com/eel-lang/eelang-py): requests are written as pipelines,
 responses are checked with patterns.
 
 ```python
 from httpee import GET, httpee, Response
-
-resp =
-    httpee()
-    ..GET:
-        'https://api.example.com/users'
 
 resp =
     httpee()
@@ -24,8 +19,8 @@ resp =
 
 ```python
 from httpee import (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, send,
-                    httpee, headers, query, timeout, cookies, auth, json,
-                    data, method, url, Response)
+                    httpee, headers, query, timeout, json, data, method,
+                    url, Response)
 from eelang import MatchError
 ```
 
@@ -87,12 +82,13 @@ httpee()
 
 - 4xx/5xx do **not** raise: check the status with a pattern.
 - `..json:` together with `..data:` raises `ValueError`.
-- Network errors and timeouts are httpx exceptions (`ConnectError`, `TimeoutException`).
-- `Response` is `httpx.Response` plus `.status`: `.json()`, `.text`, `.headers` work as usual.
+- Network errors and timeouts are fetch.py exceptions (`RequestError`, `Timeout`).
+- `Response` is fetch.py's `Response` (it has a `status` field): `.json()`, `.text`,
+  `.headers` work as usual.
 
 ### Modifiers at a glance
 
-`..headers:` · `..query:` · `..timeout: 5.0` · `..cookies:` · `..auth: (u, p)` · `..json:` · `..data:` · `..method:` · `..url:`
+`..headers:` · `..query:` · `..timeout: 5.0` · `..json:` · `..data:` · `..method:` · `..url:`
 
 ## How it works
 
@@ -102,7 +98,8 @@ httpee()
 - Modifiers accumulate parameters (repeatable, in any order); the verb at the end
   performs the request and returns a `Response`.
 - 4xx/5xx do not raise — the status is checked with a pattern; a failed `..assert:`
-  raises `MatchError`. Network errors and timeouts are httpx exceptions.
+  raises `MatchError`. Network errors and timeouts are fetch.py exceptions.
+- Redirects are followed (up to 10), as in fetch.py.
 
 ## Verbs
 
@@ -129,9 +126,7 @@ httpee()
 |---|---|---|
 | `headers` | `..headers: {'X-Key': v}` | headers (repeats add keys) |
 | `query` | `..query: {'page': 2}` | URL query parameters (repeats add keys) |
-| `timeout` | `..timeout: 5.0` | request timeout, seconds |
-| `cookies` | `..cookies: {'sid': v}` | cookies |
-| `auth` | `..auth: ('user', 'pass')` | basic auth (any `httpx.Auth` works) |
+| `timeout` | `..timeout: 5.0` | request timeout, seconds (default 30) |
 | `json` | `..json: {…}` | JSON body (exclusive with `..data:`) |
 | `data` | `..data: {…}` / `'text'` / `b'…'` | body: mapping → form, str → text, bytes → raw |
 | `method` | `..method: 'PATCH'` | method up front — for `..send()` |
@@ -150,9 +145,10 @@ git clone https://github.com/eel-lang/httpee
 pip install ./httpee
 ```
 
-Requires CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py) (0.1.6+ for the
-bare-pipeline examples) to run `.eel` files — the package itself is plain Python,
-and httpx is its only dependency. Works under gevent (`gevent.monkey.patch_all()`).
+Requires Python 3.11+ (CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py)
+0.1.6+ to run the bare-pipeline `.eel` examples). No external dependencies —
+[fetch.py](https://github.com/kennethreitz/fetch.py) (MIT © Kenneth Reitz) is vendored
+inside as `httpee/_fetch.py`. Works under gevent (`gevent.monkey.patch_all()`).
 
 ## Tests
 

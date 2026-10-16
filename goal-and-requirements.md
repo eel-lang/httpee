@@ -11,27 +11,29 @@ Tagline: «HTTP для людей. Теперь пайплайнами.»
 
 ## Цель
 
-httpee — маленький Python-пакет, обёртка над httpx для eelang: HTTP-запрос пишется
-одним пайплайном, а результат проверяется паттернами (`..assert:` / `..match:`).
+httpee — маленький Python-пакет, обёртка над fetch.py (завендорен, MIT © Kenneth
+Reitz) для eelang: HTTP-запрос пишется одним пайплайном, а результат проверяется
+паттернами (`..assert:` / `..match:`).
 Публикуется на PyPI как `httpee`; исходники — github.com/eel-lang/httpee.
 
 ## Аудитория и проблема
 
-Python-разработчик на eelang, который ходит в HTTP-API скриптами. На чистом httpx запрос —
-это развесистый вызов `client.request(method=…, url=…, headers=…, params=…, json=…)`
+Python-разработчик на eelang, который ходит в HTTP-API скриптами. На чистом fetch.py
+запрос — это вызов `fetch.request(method=…, url=…, headers=…, params=…, json=…)`
 плюс отдельные проверки статуса. httpee сжимает это в одно выражение, где тело,
 параметры и проверка читаются сверху вниз.
 
 ## Возможности
 
-- **Запрос пайплайном.** Начальное значение — тело запроса; модификаторы накапливают
-  параметры; глагол выполняет запрос и возвращает `Response`:
+- **Запрос пайплайном.** Начинается с `httpee()`; модификаторы накапливают параметры;
+  глагол выполняет запрос и возвращает `Response`:
 
   ```python
-  from httpee import GET, POST, httpee, headers, query, timeout, cookies, auth, json, Response
+  from httpee import GET, POST, httpee, headers, query, timeout, json, data, Response
 
   user =
-      {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded (как requests data=)
+      httpee()
+      ..data: {'name': 'kenneth', 'role': 'admin'}   # mapping → form-encoded
       ..headers: {'Authorization': f'Bearer {token}'}
       ..POST: 'https://api.example.com/users'
       ..assert:
@@ -45,7 +47,8 @@ Python-разработчик на eelang, который ходит в HTTP-API
           Response(status=200)
 
   patch =
-      {'role': 'moderator'}                   # метод задан заранее — может быть любым
+      httpee()
+      ..data: {'role': 'moderator'}           # метод задан заранее — может быть любым
       ..method: 'PATCH'
       ..url: 'https://api.example.com/users/1'
       ..send()
@@ -56,26 +59,29 @@ Python-разработчик на eelang, который ходит в HTTP-API
 - **Глаголы** — `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`; `..send()`
   выполняет запрос с заранее заданными `..method:`/`..url:` (метод может быть динамическим;
   по умолчанию — GET).
-  **Модификаторы** — `headers`, `query`, `timeout`, `cookies`, `auth`, `json`, `method`, `url`.
-- **Тела:** dict → form-encoded (как `data=` в requests), str → текст, bytes → сырые
-  байты; JSON — явным `..json: {…}`. Запрос без тела начинается с `httpee()`.
-  Модификаторы можно повторять и ставить в любом порядке перед глаголом.
+  **Модификаторы** — `headers`, `query`, `timeout`, `json`, `data`, `method`, `url`.
+- **Тела:** `..json: {…}` — JSON; `..data:` — mapping → form-encoded (как `data=` в
+  requests), str → текст, bytes → сырые байты; content-type'ы ставит fetch.py.
+  `..json:` и `..data:` вместе — `ValueError`. Запрос без тела — просто без
+  модификаторов тела. Модификаторы можно повторять и ставить в любом порядке
+  перед глаголом.
 - **Проверка паттернами:** `..assert: Response(status=200)` — провал → `MatchError`;
   ветвление по статусу — `..match: case Response(status=404): …`.
-- **`Response` — подкласс `httpx.Response`** с добавленным свойством `.status`
-  (в httpx есть только `.status_code`); `.json()`, `.text`, `.headers`,
+- **`Response` — это `fetch.Response`** (у него уже есть поле `status`, поэтому
+  паттерн `Response(status=200)` работает как есть); `.json()`, `.text`, `.headers`,
   `.raise_for_status()` — родные.
-- **4xx/5xx не кидаются** — возвращаются как `Response`, статус проверяется паттерном.
-  Сетевые ошибки и таймауты — исключения httpx как есть (`ConnectError`,
-  `TimeoutException`).
+- **4xx/5xx не кидаются** — возвращаются как `Response` (`check_status=False`), статус
+  проверяется паттерном. Редиректы следуются (до 10, как в fetch.py). Сетевые ошибки
+  и таймауты — исключения fetch.py как есть (`RequestError`, `Timeout`).
 
 ## Не-цели
 
-- Только sync (`httpx.Client`); async-клиент не делаем.
-- Без явных сессий и пулов: каждый запрос — новый `httpx.Client`, как модульный API
-  requests. Переиспользуемый клиент — отдельной идеей позже.
+- Только sync (fetch.py, HTTP/1.1); async-клиент не делаем.
+- Без явных сессий и пулов: каждый запрос — временная сессия fetch.py, как модульный
+  API requests. Переиспользуемый клиент — отдельной идеей позже.
 - Без ретраев, стриминга и загрузки файлов.
-- Не форк и не замена httpx/requests: тонкая обёртка поверх httpx.
+- Модификаторов `cookies`/`auth` нет — fetch.py их не имеет; заголовки — через `..headers:`.
+- Не форк и не замена fetch.py/requests: тонкая обёртка поверх fetch.py.
 
 ## Принципы (по Рейцу)
 
