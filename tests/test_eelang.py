@@ -40,9 +40,9 @@ user =
     def test_get_without_body(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import GET, query, Response
+from httpee import GET, query, httpee, Response
 page =
-    None
+    httpee()
     ..query: {{'page': 2}}
     ..GET: '{srv.url}/users'
     ..assert:
@@ -55,9 +55,9 @@ page =
         with TestServer(status=404) as srv:
             with self.assertRaises(MatchError):
                 run(f'''
-from httpee import GET, Response
+from httpee import GET, httpee, Response
 r =
-    None
+    httpee()
     ..GET: '{srv.url}/missing'
     ..assert:
         Response(status=200)
@@ -66,9 +66,9 @@ r =
     def test_assert_binds_variables(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import GET, Response
+from httpee import GET, httpee, Response
 r =
-    None
+    httpee()
     ..GET: '{srv.url}/ok'
     ..assert:
         Response(status=s)
@@ -79,9 +79,9 @@ doubled = s * 2
     def test_match_branches_on_status(self):
         with TestServer(status=418) as srv:
             ns = run(f'''
-from httpee import GET, Response
+from httpee import GET, httpee, Response
 verdict =
-    None
+    httpee()
     ..GET: '{srv.url}/teapot'
     ..match:
         case Response(status=200):
@@ -96,9 +96,9 @@ verdict =
     def test_match_fallback_captures_status(self):
         with TestServer(status=503) as srv:
             ns = run(f'''
-from httpee import GET, Response
+from httpee import GET, httpee, Response
 verdict =
-    None
+    httpee()
     ..GET: '{srv.url}/down'
     ..match:
         case Response(status=200):
@@ -127,9 +127,9 @@ r =
     def test_json_modifier_in_pipeline(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import POST, json, Response
+from httpee import POST, json, httpee, Response
 r =
-    None
+    httpee()
     ..json: {{'nested': [1, 2]}}
     ..POST: '{srv.url}/j'
     ..assert:

@@ -34,9 +34,9 @@ class RunnerTests(unittest.TestCase):
     def test_eel_script_ok(self):
         with TestServer() as srv:
             proc = run_script(f'''
-from httpee import GET, Response
+from httpee import GET, httpee, Response
 r =
-    None
+    httpee()
     ..GET: '{srv.url}/runner'
     ..assert:
         Response(status=200)
@@ -49,9 +49,9 @@ print('status', r.status)
     def test_eel_script_match_error(self):
         with TestServer(status=500) as srv:
             proc = run_script(f'''
-from httpee import GET, Response
+from httpee import GET, httpee, Response
 r =
-    None
+    httpee()
     ..GET: '{srv.url}/broken'
     ..assert:
         Response(status=200)

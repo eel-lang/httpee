@@ -12,6 +12,12 @@
         ..assert:
             Response(status=201)
 
+    page =
+        httpee()
+        ..GET: 'https://api.example.com/users'
+        ..assert:
+            Response(status=200)
+
 4xx/5xx исключений не вызывают — статус проверяется ``..assert:``/``..match:``.
 """
 
@@ -48,6 +54,11 @@ class _Request:
         self.timeout = None
         self.cookies = None
         self.auth = None
+
+
+def httpee():
+    """Пустой запрос: httpee() ..GET: url — когда тела нет."""
+    return _Request()
 
 
 def _ensure(value):
@@ -190,4 +201,4 @@ def url(url_value, value):
 
 __all__ = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS',
            'send', 'headers', 'query', 'timeout', 'cookies', 'auth', 'json',
-           'method', 'url', 'Response']
+           'method', 'url', 'Response', 'httpee']

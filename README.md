@@ -7,7 +7,7 @@
 паттернами. Никаких развесистых вызовов и отдельных проверок статуса.
 
 ```python
-from httpee import POST, headers, Response
+from httpee import POST, headers, httpee, Response
 
 user =
     {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded, как requests data=
@@ -17,7 +17,7 @@ user =
         Response(status=201)
 
 page =
-    None                                     # запрос без тела
+    httpee()                                 # пустой запрос — тела нет
     ..query: {'page': 2}
     ..GET: 'https://api.example.com/users'
     ..assert:
@@ -28,8 +28,8 @@ page =
 
 ```python
 from httpee import (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, send,
-                      headers, query, timeout, cookies, auth, json, method,
-                      url, Response)
+                      httpee, headers, query, timeout, cookies, auth, json,
+                      method, url, Response)
 from eelang import MatchError
 ```
 
@@ -52,7 +52,7 @@ r =
 | dict | form-encoded (`data=`, как requests) |
 | str | текст |
 | bytes | сырые байты |
-| `None` | без тела |
+| `httpee()` | пустой запрос — тела нет |
 | `..json: {…}` | JSON — побеждает над телом пайплайна |
 
 ### Динамический метод — `..send()`
@@ -72,14 +72,14 @@ r =
 ```python
 # ..assert: — проверка формы, биндит переменные, провал → MatchError
 p =
-    None
+    httpee()
     ..GET: url
     ..assert:
         Response(status=s)               # s видна дальше
 
 # ..match: — ветвление по статусу; нет совпадения → значение не меняется
 verdict =
-    None
+    httpee()
     ..GET: url
     ..match:
         case Response(status=200): 'ok'
@@ -100,6 +100,7 @@ verdict =
 
 - **Начальное значение пайплайна — тело запроса**: dict → form-encoded,
   str → текст, bytes → сырые байты. JSON — явным `..json: {…}`.
+  Запрос без тела начинается с `httpee()`.
 - **Модификаторы** накапливают параметры (повторяемы, в любом порядке);
   **глагол** в конце выполняет запрос и возвращает `Response`.
 - **4xx/5xx исключений не вызывают** — статус проверяется паттерном;

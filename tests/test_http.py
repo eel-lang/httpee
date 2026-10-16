@@ -3,8 +3,8 @@ import unittest
 
 import httpx
 
-from httpee import (GET, POST, PATCH, HEAD, send, headers, query, timeout,
-                      cookies, auth, json, method, url, Response)
+from httpee import (GET, POST, PATCH, HEAD, send, httpee, headers, query,
+                      timeout, cookies, auth, json, method, url, Response)
 from tests._server import TestServer
 
 
@@ -30,6 +30,13 @@ class VerbTests(unittest.TestCase):
             r = HEAD(srv.url + '/h', None)
             self.assertEqual(r.status, 200)
             self.assertEqual(srv.requests[0]['method'], 'HEAD')
+
+    def test_httpee_empty_request(self):
+        with TestServer() as srv:
+            r = GET(srv.url + '/e', httpee())
+            self.assertIsInstance(r, Response)
+            self.assertEqual(r.status, 200)
+            self.assertEqual(srv.requests[0]['method'], 'GET')
 
     def test_non_2xx_does_not_raise(self):
         with TestServer(status=404) as srv:
