@@ -16,11 +16,11 @@ parent: httpee-client
 
 - **`httpee` (один модуль)** — весь публичный API: глаголы `GET`, `POST`, `PUT`, `PATCH`,
   `DELETE`, `HEAD`, `OPTIONS` и `send`; модификаторы `headers`, `query`, `timeout`, `cookies`,
-  `auth`, `json`, `method`, `url`; класс `Response`.
+  `auth`, `json`, `method`, `url`; `httpee()` — конструктор пустого запроса; класс `Response`.
 - **`_Request` (внутренний)** — накапливаемое состояние запроса: `method`, `url`, тело
   (`body` / `json_body`), `headers`, `params`, `timeout`, `cookies`, `auth`. Пользователю
   не виден; в пайплайне его роль играет любое значение — тело (dict/str/bytes/None) или уже
-  собранный `_Request`.
+  собранный `_Request` (например, из `httpee()`).
 - **Выполнение** — глагол создаёт новый `httpx.Client`, собирает `httpx.Request` из `_Request`,
   отправляет и возвращает `Response`.
 
@@ -29,7 +29,8 @@ parent: httpee-client
 - **Модификатор** `..f: x` = `f(x, значение)`: на значении-теле оборачивает его в `_Request`
   и применяет параметр; на `_Request` — дополняет. Модификаторы повторяемы и в любом порядке
   перед глаголом. Применение после глагола (на `Response`) — `TypeError` с внятным сообщением.
-- **Глагол** `..GET: url` = `GET(url, значение)`: выполняет запрос. Тело: dict → form-encoded
+- **Глагол** `..GET: url` = `GET(url, значение)`: выполняет запрос. Запрос без тела
+  начинается с `httpee()` — свежий `_Request`. Тело: dict → form-encoded
   (`data=`), str → текст, bytes → сырые байты; `..json: {…}` → `json=` (побеждает над телом).
 - **`Response`** — подкласс `httpx.Response` со свойством `status` (→ `status_code`); глагол
   оборачивает ответ httpx в него, чтобы class-паттерн `Response(status=200)` работал

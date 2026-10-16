@@ -13,7 +13,7 @@ Tagline: «HTTP для людей. Теперь пайплайнами.»
 
 httpee — маленький Python-пакет, обёртка над httpx для eelang: HTTP-запрос пишется
 одним пайплайном, а результат проверяется паттернами (`..assert:` / `..match:`).
-Пакет живёт в git; на PyPI пока не публикуется.
+Публикуется на PyPI как `httpee`; исходники — github.com/eel-lang/httpee.
 
 ## Аудитория и проблема
 
@@ -28,7 +28,7 @@ Python-разработчик на eelang, который ходит в HTTP-API
   параметры; глагол выполняет запрос и возвращает `Response`:
 
   ```python
-  from httpee import GET, POST, headers, query, timeout, cookies, auth, json, Response
+  from httpee import GET, POST, httpee, headers, query, timeout, cookies, auth, json, Response
 
   user =
       {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded (как requests data=)
@@ -38,7 +38,7 @@ Python-разработчик на eelang, который ходит в HTTP-API
           Response(status=201)
 
   page =
-      None                                     # запрос без тела
+      httpee()                                # пустой запрос — тела нет
       ..query: {'page': 2}
       ..GET: 'https://api.example.com/users'
       ..assert:
@@ -58,8 +58,8 @@ Python-разработчик на eelang, который ходит в HTTP-API
   по умолчанию — GET).
   **Модификаторы** — `headers`, `query`, `timeout`, `cookies`, `auth`, `json`, `method`, `url`.
 - **Тела:** dict → form-encoded (как `data=` в requests), str → текст, bytes → сырые
-  байты; JSON — явным `..json: {…}`. Модификаторы можно повторять и ставить в любом
-  порядке перед глаголом.
+  байты; JSON — явным `..json: {…}`. Запрос без тела начинается с `httpee()`.
+  Модификаторы можно повторять и ставить в любом порядке перед глаголом.
 - **Проверка паттернами:** `..assert: Response(status=200)` — провал → `MatchError`;
   ветвление по статусу — `..match: case Response(status=404): …`.
 - **`Response` — подкласс `httpx.Response`** с добавленным свойством `.status`
@@ -71,7 +71,6 @@ Python-разработчик на eelang, который ходит в HTTP-API
 
 ## Не-цели
 
-- На PyPI пока не публикуем: пакет живёт в git.
 - Только sync (`httpx.Client`); async-клиент не делаем.
 - Без явных сессий и пулов: каждый запрос — новый `httpx.Client`, как модульный API
   requests. Переиспользуемый клиент — отдельной идеей позже.
