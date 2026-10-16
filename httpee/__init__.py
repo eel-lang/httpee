@@ -1,12 +1,13 @@
-"""httpee — HTTP для людей. Теперь пайплайнами.
+"""httpee — тонкая обёртка над httpx для eelang-пайплайнов.
 
-Тонкая обёртка над httpx для eelang: запрос собирается пайплайном, результат
+Запрос начинается с httpee(), тело — через ..json: или ..data:, результат
 проверяется паттернами::
 
-    from httpee import POST, headers, Response
+    from httpee import POST, headers, json, httpee, Response
 
     user =
-        {'name': 'kenneth', 'role': 'admin'}
+        httpee()
+        ..json: {'name': 'kenneth'}
         ..headers: {'Authorization': 'Bearer ...'}
         ..POST: 'https://api.example.com/users'
         ..assert:
@@ -22,8 +23,11 @@
 """
 
 import httpx
+from collections.abc import Mapping
 
 __version__ = "0.1.0"
+
+_UNSET = object()
 
 
 class Response(httpx.Response):
@@ -41,14 +45,14 @@ class Response(httpx.Response):
 class _Request:
     """Накопленное состояние запроса. Пользователю не виден."""
 
-    __slots__ = ('method', 'url', 'body', 'json_body', 'headers', 'params',
+    __slots__ = ('method', 'url', 'json_body', 'data_body', 'headers', 'params',
                  'timeout', 'cookies', 'auth')
 
-    def __init__(self, body=None):
+    def __init__(self):
         self.method = None
         self.url = None
-        self.body = body
-        self.json_body = None
+        self.json_body = _UNSET
+        self.data_body = _UNSET
         self.headers = {}
         self.params = {}
         self.timeout = None
@@ -57,16 +61,19 @@ class _Request:
 
 
 def httpee():
-    """Пустой запрос: httpee() ..GET: url — когда тела нет."""
+    """Пустой запрос: httpee() ..GET: url — тела нет, пока не задано."""
     return _Request()
 
 
 def _ensure(value):
-    """Тело или _Request → _Request; на Response — внятный TypeError."""
+    """Значение пайплайна обязано быть _Request (из httpee()); иначе TypeError."""
     if isinstance(value, Response):
         raise TypeError(
             'это уже Response — модификаторы и глаголы идут до выполнения запроса')
-    return value if isinstance(value, _Request) else _Request(body=value)
+    if not isinstance(value, _Request):
+        raise TypeError(
+            'запрос начинается с httpee(); тело задавайте ..json:/..data:')
+    return value
 
 
 def _wrap(resp):
@@ -89,22 +96,18 @@ def _execute(req):
             'запрос без адреса: задайте ..url: или вызовите ..GET:/..POST: с адресом')
     method = (req.method or 'GET').upper()
     kwargs = {}
-    if req.json_body is not None:
+    if req.json_body is not _UNSET:
         kwargs['json'] = req.json_body
-    else:
-        body = req.body
-        if body is None:
-            pass
-        elif isinstance(body, dict):
-            kwargs['data'] = body
+    elif req.data_body is not _UNSET:
+        body = req.data_body
+        if isinstance(body, Mapping):
+            kwargs['data'] = dict(body)
         elif isinstance(body, str):
             kwargs['content'] = body.encode()
-        elif isinstance(body, (bytes, bytearray, memoryview)):
-            kwargs['content'] = bytes(body)
+            req.headers.setdefault('content-type', 'text/plain; charset=utf-8')
         else:
-            raise TypeError(
-                f'неподдерживаемое тело запроса: {type(body).__name__} '
-                '(ожидаются dict/str/bytes)')
+            kwargs['content'] = bytes(body)
+            req.headers.setdefault('content-type', 'application/octet-stream')
     with httpx.Client(timeout=req.timeout) as client:
         resp = client.request(method, req.url, headers=req.headers or None,
                               params=req.params or None, cookies=req.cookies,
@@ -146,7 +149,7 @@ def send(value):
 def headers(headers_value, value):
     """..headers: {...} — заголовки запроса (повторные вызовы дополняют)."""
     req = _ensure(value)
-    req.headers.update(dict(headers_value))
+    req.headers.update({k.lower(): v for k, v in dict(headers_value).items()})
     return req
 
 
@@ -179,9 +182,22 @@ def auth(auth_value, value):
 
 
 def json(json_value, value):
-    """..json: {...} — тело JSON-ом (побеждает над телом пайплайна)."""
+    """..json: {…} — тело JSON-ом. Несовместим с ..data:."""
     req = _ensure(value)
+    if req.data_body is not _UNSET:
+        raise ValueError('..json: и ..data: вместе нельзя — выберите одно')
     req.json_body = json_value
+    return req
+
+
+def data(data_value, value):
+    """..data: — тело: mapping → form, str → текст, bytes → сырые. Несовместим с ..json:."""
+    req = _ensure(value)
+    if not isinstance(data_value, (Mapping, str, bytes, bytearray, memoryview)):
+        raise TypeError('..data: принимает mapping, str или bytes')
+    if req.json_body is not _UNSET:
+        raise ValueError('..json: и ..data: вместе нельзя — выберите одно')
+    req.data_body = data_value
     return req
 
 
@@ -201,4 +217,4 @@ def url(url_value, value):
 
 __all__ = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS',
            'send', 'headers', 'query', 'timeout', 'cookies', 'auth', 'json',
-           'method', 'url', 'Response', 'httpee']
+           'data', 'method', 'url', 'Response', 'httpee']
