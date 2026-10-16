@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "httpee"
 version = "0.1.0"
-description = "httpee — HTTP для людей: обёртка над httpx для eelang-пайплайнов"
+description = "httpee — thin httpx wrapper for eelang pipelines"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"

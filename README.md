@@ -1,83 +1,81 @@
 # httpee
 
-**HTTP для людей. Теперь пайплайнами.**
-
-`httpee` — маленькая обёртка над [httpx](https://www.python-httpx.org/) для
-[eelang](https://github.com/eel-lang/eelang-py): запрос собирается пайплайном, результат проверяется
-паттернами. Никаких развесистых вызовов и отдельных проверок статуса.
+`httpee` is a thin wrapper around [httpx](https://www.python-httpx.org/) for
+[eelang](https://github.com/eel-lang/eelang-py): requests are written as pipelines,
+responses are checked with patterns.
 
 ```python
 from httpee import POST, headers, httpee, Response
 
 user =
-    {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded, как requests data=
+    {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded, like requests data=
     ..headers: {'Authorization': f'Bearer {token}'}
     ..POST: 'https://api.example.com/users'
     ..assert:
         Response(status=201)
 
 page =
-    httpee()                                 # пустой запрос — тела нет
+    httpee()                                  # empty request — no body
     ..query: {'page': 2}
     ..GET: 'https://api.example.com/users'
     ..assert:
         Response(status=200)
 ```
 
-## Шпаргалка
+## Cheatsheet
 
 ```python
 from httpee import (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, send,
-                      httpee, headers, query, timeout, cookies, auth, json,
-                      method, url, Response)
+                    httpee, headers, query, timeout, cookies, auth, json,
+                    method, url, Response)
 from eelang import MatchError
 ```
 
-### Запрос — это пайплайн
+### A request is a pipeline
 
 ```python
 r =
     {'name': 'kenneth', 'role': 'admin'}     # dict → form-encoded
-    ..headers: {'X-Key': v}                  # заголовки (повторы дополняют)
-    ..query: {'page': 2}                     # query-параметры (дополняют)
-    ..POST: 'https://api.example.com/users'  # глагол выполняет запрос
+    ..headers: {'X-Key': v}                  # headers (repeats add keys)
+    ..query: {'page': 2}                     # query parameters (repeats add keys)
+    ..POST: 'https://api.example.com/users'  # verb performs the request
     ..assert:
-        Response(status=201)                 # провал → MatchError
+        Response(status=201)                 # failure → MatchError
 ```
 
-### Тела
+### Bodies
 
-| Значение | Уходит как |
+| Value | Sent as |
 |---|---|
-| dict | form-encoded (`data=`, как requests) |
-| str | текст |
-| bytes | сырые байты |
-| `httpee()` | пустой запрос — тела нет |
-| `..json: {…}` | JSON — побеждает над телом пайплайна |
+| dict | form-encoded (`data=`, like requests) |
+| str | text |
+| bytes | raw bytes |
+| `httpee()` | empty request — no body |
+| `..json: {…}` | JSON — takes precedence over the pipeline body |
 
-### Динамический метод — `..send()`
+### Dynamic method — `..send()`
 
 ```python
 r =
     {'role': 'moderator'}
-    ..method: m                          # любой метод, хоть из переменной
+    ..method: m                          # any method, even from a variable
     ..url: 'https://…'
-    ..send()                             # без ..method: — GET
+    ..send()                             # without ..method: defaults to GET
     ..assert:
         Response(status=200)
 ```
 
-### Проверки паттернами
+### Pattern checks
 
 ```python
-# ..assert: — проверка формы, биндит переменные, провал → MatchError
+# ..assert: — shape check, binds variables, failure → MatchError
 p =
     httpee()
     ..GET: url
     ..assert:
-        Response(status=s)               # s видна дальше
+        Response(status=s)               # s is available afterwards
 
-# ..match: — ветвление по статусу; нет совпадения → значение не меняется
+# ..match: — branch on status; no match → the value is unchanged
 verdict =
     httpee()
     ..GET: url
@@ -86,81 +84,81 @@ verdict =
         case Response(status=n): f'HTTP {n}'
 ```
 
-### Ошибки
+### Errors
 
-- 4xx/5xx — **не** исключение: статус проверяйте паттерном.
-- Сеть и таймауты — исключения httpx как есть (`ConnectError`, `TimeoutException`).
-- `Response` — это `httpx.Response` + `.status`: `.json()`, `.text`, `.headers` работают.
+- 4xx/5xx do **not** raise: check the status with a pattern.
+- Network errors and timeouts are httpx exceptions (`ConnectError`, `TimeoutException`).
+- `Response` is `httpx.Response` plus `.status`: `.json()`, `.text`, `.headers` work as usual.
 
-### Модификаторы одним взглядом
+### Modifiers at a glance
 
 `..headers:` · `..query:` · `..timeout: 5.0` · `..cookies:` · `..auth: (u, p)` · `..json:` · `..method:` · `..url:`
 
-## Как это работает
+## How it works
 
-- **Начальное значение пайплайна — тело запроса**: dict → form-encoded,
-  str → текст, bytes → сырые байты. JSON — явным `..json: {…}`.
-  Запрос без тела начинается с `httpee()`.
-- **Модификаторы** накапливают параметры (повторяемы, в любом порядке);
-  **глагол** в конце выполняет запрос и возвращает `Response`.
-- **4xx/5xx исключений не вызывают** — статус проверяется паттерном;
-  провал `..assert:` — `MatchError`. Сетевые ошибки и таймауты — исключения httpx.
+- The pipeline's initial value is the request body: dict → form-encoded, str → text,
+  bytes → raw bytes. JSON goes through an explicit `..json: {…}`. A request without
+  a body starts with `httpee()`.
+- Modifiers accumulate parameters (repeatable, in any order); the verb at the end
+  performs the request and returns a `Response`.
+- 4xx/5xx do not raise — the status is checked with a pattern; a failed `..assert:`
+  raises `MatchError`. Network errors and timeouts are httpx exceptions.
 
-## Глаголы
+## Verbs
 
-| Глагол | Пример | Что делает |
+| Verb | Example | What it does |
 |---|---|---|
-| `GET` … `OPTIONS` | `..GET: url` | выполняет запрос этим методом |
-| `send` | `..send()` | выполняет запрос с заранее заданными `..method:`/`..url:` |
+| `GET` … `OPTIONS` | `..GET: url` | performs the request with this method |
+| `send` | `..send()` | performs the request with a previously set `..method:`/`..url:` |
 
-Метод можно передать заранее — он может быть любым:
+The method can be set up front — and can be anything:
 
 ```python
 patch =
     {'role': 'moderator'}
-    ..method: 'PATCH'                          # хоть из переменной
+    ..method: 'PATCH'                          # or from a variable
     ..url: 'https://api.example.com/users/1'
     ..send()
     ..assert:
         Response(status=200)
 ```
 
-## Модификаторы
+## Modifiers
 
-| Модификатор | Пример | Что делает |
+| Modifier | Example | What it does |
 |---|---|---|
-| `headers` | `..headers: {'X-Key': v}` | заголовки (повторные вызовы дополняют) |
-| `query` | `..query: {'page': 2}` | query-параметры URL (дополняют) |
-| `timeout` | `..timeout: 5.0` | таймаут запроса, секунды |
-| `cookies` | `..cookies: {'sid': v}` | куки |
-| `auth` | `..auth: ('user', 'pass')` | basic-auth (можно `httpx.Auth`) |
-| `json` | `..json: {…}` | тело JSON-ом (побеждает над телом пайплайна) |
-| `method` | `..method: 'PATCH'` | метод заранее — для `..send()` |
-| `url` | `..url: 'https://…'` | адрес заранее — для `..send()` |
+| `headers` | `..headers: {'X-Key': v}` | headers (repeats add keys) |
+| `query` | `..query: {'page': 2}` | URL query parameters (repeats add keys) |
+| `timeout` | `..timeout: 5.0` | request timeout, seconds |
+| `cookies` | `..cookies: {'sid': v}` | cookies |
+| `auth` | `..auth: ('user', 'pass')` | basic auth (any `httpx.Auth` works) |
+| `json` | `..json: {…}` | JSON body (takes precedence over the pipeline body) |
+| `method` | `..method: 'PATCH'` | method up front — for `..send()` |
+| `url` | `..url: 'https://…'` | URL up front — for `..send()` |
 
-## Установка
+## Installation
 
 ```sh
 pip install httpee
 ```
 
-Из исходников:
+From source:
 
 ```sh
 git clone https://github.com/eel-lang/httpee
 pip install ./httpee
 ```
 
-Нужен CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py) (пакет сам по себе — обычный Python,
-но пайплайны даёт язык). Зависимость одна — httpx. Работает под gevent
-(`gevent.monkey.patch_all()`).
+Requires CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py) to run `.eel`
+files — the package itself is plain Python, and httpx is its only dependency.
+Works under gevent (`gevent.monkey.patch_all()`).
 
-## Тесты
+## Tests
 
 ```sh
 python -m unittest discover -s tests
 ```
 
-## Лицензия
+## License
 
 MIT (`LICENSE`).
