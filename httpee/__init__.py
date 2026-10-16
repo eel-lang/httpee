@@ -1,4 +1,4 @@
-"""httpee — тонкая обёртка над httpx для eelang-пайплайнов.
+"""httpee — тонкая обёртка над fetch.py для eelang-пайплайнов.
 
 Запрос начинается с httpee(), тело — через ..json: или ..data:, результат
 проверяется паттернами::
@@ -22,31 +22,27 @@
 4xx/5xx исключений не вызывают — статус проверяется ``..assert:``/``..match:``.
 """
 
-import httpx
 from collections.abc import Mapping
 
-__version__ = "0.1.0"
+from . import _fetch
+
+__version__ = "0.2.0"
+
+# fetch.py — HTTP-движок (завендорен, MIT © Kenneth Reitz).
+Response = _fetch.Response
+Error = _fetch.Error
+RequestError = _fetch.RequestError
+Timeout = _fetch.Timeout
+HTTPError = _fetch.HTTPError
 
 _UNSET = object()
-
-
-class Response(httpx.Response):
-    """httpx.Response + свойство ``status`` для паттерна ``Response(status=200)``.
-
-    Остальное — родное: ``.json()``, ``.text``, ``.content``, ``.headers``,
-    ``.raise_for_status()``.
-    """
-
-    @property
-    def status(self):
-        return self.status_code
 
 
 class _Request:
     """Накопленное состояние запроса. Пользователю не виден."""
 
     __slots__ = ('method', 'url', 'json_body', 'data_body', 'headers', 'params',
-                 'timeout', 'cookies', 'auth')
+                 'timeout')
 
     def __init__(self):
         self.method = None
@@ -56,8 +52,6 @@ class _Request:
         self.headers = {}
         self.params = {}
         self.timeout = None
-        self.cookies = None
-        self.auth = None
 
 
 def httpee():
@@ -76,21 +70,8 @@ def _ensure(value):
     return value
 
 
-def _wrap(resp):
-    """httpx.Response → httpee.Response (для class-паттернов)."""
-    return Response(
-        resp.status_code,
-        headers=resp.headers,
-        content=resp.content,
-        request=resp.request,
-        extensions=resp.extensions,
-        history=resp.history,
-        default_encoding=resp.default_encoding,
-    )
-
-
 def _execute(req):
-    """Отправить _Request новым httpx.Client и вернуть Response."""
+    """Отправить _Request через fetch.py и вернуть Response."""
     if req.url is None:
         raise TypeError(
             'запрос без адреса: задайте ..url: или вызовите ..GET:/..POST: с адресом')
@@ -99,20 +80,11 @@ def _execute(req):
     if req.json_body is not _UNSET:
         kwargs['json'] = req.json_body
     elif req.data_body is not _UNSET:
-        body = req.data_body
-        if isinstance(body, Mapping):
-            kwargs['data'] = dict(body)
-        elif isinstance(body, str):
-            kwargs['content'] = body.encode()
-            req.headers.setdefault('content-type', 'text/plain; charset=utf-8')
-        else:
-            kwargs['content'] = bytes(body)
-            req.headers.setdefault('content-type', 'application/octet-stream')
-    with httpx.Client(timeout=req.timeout) as client:
-        resp = client.request(method, req.url, headers=req.headers or None,
-                              params=req.params or None, cookies=req.cookies,
-                              auth=req.auth, **kwargs)
-    return _wrap(resp)
+        kwargs['data'] = req.data_body
+    if req.timeout is not None:
+        kwargs['timeout'] = req.timeout
+    return _fetch.request(method, req.url, params=req.params or None,
+                          headers=req.headers or None, check_status=False, **kwargs)
 
 
 def _verb(method):
@@ -128,7 +100,7 @@ def _verb(method):
     run.__qualname__ = method
     run.__doc__ = (
         f'Выполнить {method}-запрос: ..{method}: url. '
-        'Значение пайплайна — тело или накопленный запрос.')
+        'Значение пайплайна — httpee().')
     return run
 
 
@@ -167,20 +139,6 @@ def timeout(timeout_value, value):
     return req
 
 
-def cookies(cookies_value, value):
-    """..cookies: {...} — куки запроса."""
-    req = _ensure(value)
-    req.cookies = cookies_value
-    return req
-
-
-def auth(auth_value, value):
-    """..auth: ('user', 'pass') — basic-auth; можно httpx.Auth."""
-    req = _ensure(value)
-    req.auth = auth_value
-    return req
-
-
 def json(json_value, value):
     """..json: {…} — тело JSON-ом. Несовместим с ..data:."""
     req = _ensure(value)
@@ -216,5 +174,6 @@ def url(url_value, value):
 
 
 __all__ = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS',
-           'send', 'headers', 'query', 'timeout', 'cookies', 'auth', 'json',
-           'data', 'method', 'url', 'Response', 'httpee']
+           'send', 'headers', 'query', 'timeout', 'json', 'data', 'method',
+           'url', 'Response', 'Error', 'RequestError', 'Timeout', 'HTTPError',
+           'httpee']
