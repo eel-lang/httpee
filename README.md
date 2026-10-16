@@ -5,19 +5,17 @@
 responses are checked with patterns.
 
 ```python
-from httpee import POST, headers, httpee, Response
+from httpee import GET, httpee, Response
 
-user =
-    {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded, like requests data=
-    ..headers: {'Authorization': f'Bearer {token}'}
-    ..POST: 'https://api.example.com/users'
-    ..assert:
-        Response(status=201)
+resp =
+    httpee()
+    ..GET:
+        'https://api.example.com/users'
 
-page =
-    httpee()                                  # empty request — no body
-    ..query: {'page': 2}
-    ..GET: 'https://api.example.com/users'
+resp =
+    httpee()
+    ..GET:
+        'https://api.example.com/users'
     ..assert:
         Response(status=200)
 ```
@@ -34,13 +32,12 @@ from eelang import MatchError
 ### A request is a pipeline
 
 ```python
-r =
-    {'name': 'kenneth', 'role': 'admin'}     # dict → form-encoded
-    ..headers: {'X-Key': v}                  # headers (repeats add keys)
-    ..query: {'page': 2}                     # query parameters (repeats add keys)
-    ..POST: 'https://api.example.com/users'  # verb performs the request
-    ..assert:
-        Response(status=201)                 # failure → MatchError
+{'name': 'kenneth', 'role': 'admin'}     # dict → form-encoded
+..headers: {'X-Key': v}                  # headers (repeats add keys)
+..query: {'page': 2}                     # query parameters (repeats add keys)
+..POST: 'https://api.example.com/users'  # verb performs the request
+..assert:
+    Response(status=201)                 # failure → MatchError
 ```
 
 ### Bodies
@@ -56,32 +53,29 @@ r =
 ### Dynamic method — `..send()`
 
 ```python
-r =
-    {'role': 'moderator'}
-    ..method: m                          # any method, even from a variable
-    ..url: 'https://…'
-    ..send()                             # without ..method: defaults to GET
-    ..assert:
-        Response(status=200)
+{'role': 'moderator'}
+..method: m                          # any method, even from a variable
+..url: 'https://…'
+..send()                             # without ..method: defaults to GET
+..assert:
+    Response(status=200)
 ```
 
 ### Pattern checks
 
 ```python
 # ..assert: — shape check, binds variables, failure → MatchError
-p =
-    httpee()
-    ..GET: url
-    ..assert:
-        Response(status=s)               # s is available afterwards
+httpee()
+..GET: url
+..assert:
+    Response(status=s)               # s is available afterwards
 
 # ..match: — branch on status; no match → the value is unchanged
-verdict =
-    httpee()
-    ..GET: url
-    ..match:
-        case Response(status=200): 'ok'
-        case Response(status=n): f'HTTP {n}'
+httpee()
+..GET: url
+..match:
+    case Response(status=200): 'ok'
+    case Response(status=n): f'HTTP {n}'
 ```
 
 ### Errors
@@ -114,13 +108,12 @@ verdict =
 The method can be set up front — and can be anything:
 
 ```python
-patch =
-    {'role': 'moderator'}
-    ..method: 'PATCH'                          # or from a variable
-    ..url: 'https://api.example.com/users/1'
-    ..send()
-    ..assert:
-        Response(status=200)
+{'role': 'moderator'}
+..method: 'PATCH'                          # or from a variable
+..url: 'https://api.example.com/users/1'
+..send()
+..assert:
+    Response(status=200)
 ```
 
 ## Modifiers
@@ -149,9 +142,9 @@ git clone https://github.com/eel-lang/httpee
 pip install ./httpee
 ```
 
-Requires CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py) to run `.eel`
-files — the package itself is plain Python, and httpx is its only dependency.
-Works under gevent (`gevent.monkey.patch_all()`).
+Requires CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py) (0.1.6+ for the
+bare-pipeline examples) to run `.eel` files — the package itself is plain Python,
+and httpx is its only dependency. Works under gevent (`gevent.monkey.patch_all()`).
 
 ## Tests
 

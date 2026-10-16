@@ -151,5 +151,20 @@ r =
             self.assertEqual(srv.requests[0]['body'], 'some=json')
 
 
+    def test_bare_pipeline_without_assignment(self):
+        with TestServer() as srv:
+            run(f'''
+from httpee import send, method, url, Response
+{{'v': 1}}
+..method: 'PATCH'
+..url: '{srv.url}/thing'
+..send()
+..assert:
+    Response(status=200)
+''')
+            self.assertEqual(srv.requests[0]['method'], 'PATCH')
+            self.assertEqual(srv.requests[0]['body'], 'v=1')
+
+
 if __name__ == '__main__':
     unittest.main()
