@@ -1,8 +1,23 @@
 # httpee
 
 `httpee` is a thin wrapper around [fetch.py](https://github.com/kennethreitz/fetch.py)
-(by Kenneth Reitz) for [eelang](https://github.com/eel-lang/eelang-py): requests are
-written as pipelines, responses are checked with patterns.
+(by Kenneth Reitz). It uses the [Eel](https://github.com/eel-lang/eelang-py) dialect of
+Python.
+
+Eel adds two features to Python — assert patterns and pipelines — and `=` can break
+onto the next line:
+
+```python
+# assert pattern — checks the shape and binds names; failure → MatchError
+assert Point(x, y) = get_point()
+
+# pipeline — the value flows into the call as the last argument
+squares =
+    [1, 2, 3]
+    ..map(lambda x: x * x)
+```
+
+A request is a pipeline of httpee verbs and modifiers:
 
 ```python
 from httpee import GET, httpee, Response
