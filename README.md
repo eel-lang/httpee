@@ -4,7 +4,7 @@
 (by Kenneth Reitz). It uses the [Eel](https://github.com/eel-lang/eelang-py) dialect of
 Python.
 
-Eel adds two features to Python — assert patterns and pipelines — and `=` can break
+*Eel* adds two features to Python — assert patterns and pipelines — and `=` can break
 onto the next line:
 
 ```python
