@@ -37,17 +37,11 @@ resp =
 pip install httpee
 ```
 
-From source:
-
-```sh
-git clone https://github.com/eel-lang/httpee
-pip install ./httpee
-```
-
 Requires Python 3.15+ ([eelang](https://github.com/eel-lang/eelang-py) 0.1.6+ to run
 the bare-pipeline `.eel` examples). No external dependencies —
 [fetch.py](https://github.com/kennethreitz/fetch.py) (MIT © Kenneth Reitz) is vendored
-inside as `httpee/_fetch.py`. Works under gevent (`gevent.monkey.patch_all()`).
+inside as `httpee/_fetch.py`. Works with regular Python and with gevent
+(`gevent.monkey.patch_all()`).
 
 
 ## Cheatsheet
