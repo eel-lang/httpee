@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eel-http"
+version = "0.1.0"
+description = "eel-http — HTTP для людей: обёртка над httpx для eelang-пайплайнов"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["httpx>=0.27"]
+
+[tool.setuptools]
+packages = ["eel_http"]
