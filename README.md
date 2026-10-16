@@ -31,6 +31,25 @@ resp =
         Response(status=200)
 ```
 
+## Installation
+
+```sh
+pip install httpee
+```
+
+From source:
+
+```sh
+git clone https://github.com/eel-lang/httpee
+pip install ./httpee
+```
+
+Requires Python 3.11+ (CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py)
+0.1.6+ to run the bare-pipeline `.eel` examples). No external dependencies —
+[fetch.py](https://github.com/kennethreitz/fetch.py) (MIT © Kenneth Reitz) is vendored
+inside as `httpee/_fetch.py`. Works under gevent (`gevent.monkey.patch_all()`).
+
+
 ## Cheatsheet
 
 ### A request is a pipeline
@@ -141,24 +160,6 @@ httpee()
 | `data` | `..data: {…}` / `'text'` / `b'…'` | body: mapping → form, str → text, bytes → raw |
 | `method` | `..method: 'PATCH'` | method up front — for `..send()` |
 | `url` | `..url: 'https://…'` | URL up front — for `..send()` |
-
-## Installation
-
-```sh
-pip install httpee
-```
-
-From source:
-
-```sh
-git clone https://github.com/eel-lang/httpee
-pip install ./httpee
-```
-
-Requires Python 3.11+ (CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py)
-0.1.6+ to run the bare-pipeline `.eel` examples). No external dependencies —
-[fetch.py](https://github.com/kennethreitz/fetch.py) (MIT © Kenneth Reitz) is vendored
-inside as `httpee/_fetch.py`. Works under gevent (`gevent.monkey.patch_all()`).
 
 ## Tests
 
