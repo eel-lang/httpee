@@ -1,10 +1,9 @@
 """Тесты глаголов, модификаторов и send на чистом Python (без eelang)."""
 import unittest
 
-import httpx
-
 from httpee import (GET, POST, PATCH, HEAD, send, httpee, headers, query,
-                    timeout, cookies, auth, json, data, method, url, Response)
+                    timeout, json, data, method, url, Response, RequestError,
+                    Timeout)
 from tests._server import TestServer
 
 
@@ -13,7 +12,6 @@ class VerbTests(unittest.TestCase):
         with TestServer() as srv:
             r = GET(srv.url + '/x', httpee())
             self.assertIsInstance(r, Response)
-            self.assertIsInstance(r, httpx.Response)
             self.assertEqual(r.status, 200)
             self.assertEqual(srv.requests[0]['method'], 'GET')
             self.assertEqual(srv.requests[0]['path'], '/x')
@@ -47,12 +45,12 @@ class VerbTests(unittest.TestCase):
         # Порт занят локальным сервером, но сервер закрыт — соединение разорвётся.
         with TestServer() as srv:
             port = srv.port
-        with self.assertRaises(httpx.ConnectError):
+        with self.assertRaises(RequestError):
             GET(f'http://127.0.0.1:{port}/x', httpee())
 
     def test_timeout_propagates(self):
         with TestServer(delay=1.0) as srv:
-            with self.assertRaises(httpx.TimeoutException):
+            with self.assertRaises(Timeout):
                 GET(srv.url + '/slow', timeout(0.05, httpee()))
 
     def test_verb_after_verb_type_error(self):
@@ -133,19 +131,6 @@ class ModifierTests(unittest.TestCase):
             self.assertEqual(req['path'], '/users?page=2&size=10')
             self.assertEqual(req['headers']['x-a'], '1')
             self.assertEqual(req['headers']['x-b'], '2')
-
-    def test_cookies(self):
-        with TestServer() as srv:
-            r = GET(srv.url + '/c', cookies({'sid': 'abc'}, httpee()))
-            self.assertEqual(srv.requests[0]['headers']['cookie'], 'sid=abc')
-            self.assertEqual(r.status, 200)
-
-    def test_auth_basic(self):
-        with TestServer() as srv:
-            GET(srv.url + '/auth', auth(('user', 'pass'), httpee()))
-            auth_header = srv.requests[0]['headers'].get('authorization')
-            self.assertIsNotNone(auth_header)
-            self.assertTrue(auth_header.startswith('Basic '))
 
     def test_modifier_after_verb_type_error(self):
         with TestServer() as srv:

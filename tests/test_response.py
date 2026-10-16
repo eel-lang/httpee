@@ -1,30 +1,37 @@
-"""Тесты Response — подкласс httpx.Response со свойством status."""
+"""Тесты Response — fetch.Response с паттерн-совместимыми полями."""
 import unittest
 
-import httpx
-
-from httpee import Response
+from httpee import HTTPError, Response
+from httpee._fetch import Headers
 
 
 class ResponseTests(unittest.TestCase):
-    def test_subclass_of_httpx(self):
-        self.assertTrue(issubclass(Response, httpx.Response))
-
-    def test_status_property(self):
-        r = Response(201, content=b'{}', headers={'content-type': 'application/json'})
+    def test_status_field(self):
+        r = Response(201, Headers(), b'{}', 'http://x/', 'Created')
         self.assertEqual(r.status, 201)
-        self.assertEqual(r.status_code, 201)
 
-    def test_httpx_api_intact(self):
-        r = Response(200, content=b'{"k": "v"}',
-                     headers={'content-type': 'application/json'})
+    def test_json(self):
+        r = Response(200, Headers([('content-type', 'application/json')]), b'{"k": "v"}',
+                     'http://x/', 'OK')
         self.assertEqual(r.json(), {'k': 'v'})
-        self.assertIn('application/json', r.headers['content-type'])
-        self.assertEqual(r.status, 200)
 
-    def test_raise_for_status_still_available(self):
-        r = Response(500, content=b'', request=httpx.Request('GET', 'http://x/'))
-        with self.assertRaises(httpx.HTTPStatusError):
+    def test_text(self):
+        r = Response(200, Headers([('content-type', 'text/plain; charset=utf-8')]),
+                     'привет'.encode('utf-8'), 'http://x/', 'OK')
+        self.assertEqual(r.text, 'привет')
+
+    def test_headers_case_insensitive(self):
+        r = Response(200, Headers([('Content-Type', 'application/json')]), b'{}',
+                     'http://x/', 'OK')
+        self.assertEqual(r.headers['content-type'], 'application/json')
+
+    def test_ok(self):
+        self.assertTrue(Response(200, Headers(), b'', 'http://x/', 'OK').ok)
+        self.assertFalse(Response(404, Headers(), b'', 'http://x/', 'Not Found').ok)
+
+    def test_raise_for_status(self):
+        r = Response(500, Headers(), b'', 'http://x/', 'Error')
+        with self.assertRaises(HTTPError):
             r.raise_for_status()
 
 
