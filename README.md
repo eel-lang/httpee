@@ -9,6 +9,7 @@ onto the next line:
 
 ```python
 # assert pattern — checks the shape and binds names; failure → MatchError
+# you can use anything you would use with match..case
 assert Point(x, y) = get_point()
 
 # pipeline — the value flows into the call as the last argument
