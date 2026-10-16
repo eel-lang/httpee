@@ -1,8 +1,8 @@
 # httpee
 
-`httpee` is a thin wrapper around [fetch.py](https://github.com/kennethreitz/fetch.py) for
-[eelang](https://github.com/eel-lang/eelang-py): requests are written as pipelines,
-responses are checked with patterns.
+`httpee` is a thin wrapper around [fetch.py](https://github.com/kennethreitz/fetch.py)
+(by Kenneth Reitz) for [eelang](https://github.com/eel-lang/eelang-py): requests are
+written as pipelines, responses are checked with patterns.
 
 ```python
 from httpee import GET, httpee, Response
