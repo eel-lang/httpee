@@ -14,8 +14,8 @@ def run(source, ns=None):
     """Парсим eelang-исходник C-парсером и исполняем."""
     if ns is None:
         ns = {}
-    mod = eelang.parse(source, '<eel-http-test>')
-    exec(compile(mod, '<eel-http-test>', 'exec'), ns)
+    mod = eelang.parse(source, '<httpee-test>')
+    exec(compile(mod, '<httpee-test>', 'exec'), ns)
     return ns
 
 
@@ -24,7 +24,7 @@ class EelangPipelineTests(unittest.TestCase):
     def test_post_with_assert_pattern(self):
         with TestServer() as srv:
             ns = run(f'''
-from eel_http import POST, headers, Response
+from httpee import POST, headers, Response
 user =
     {{'name': 'kenneth', 'role': 'admin'}}
     ..headers: {{'X-Test': 'yes'}}
@@ -40,7 +40,7 @@ user =
     def test_get_without_body(self):
         with TestServer() as srv:
             ns = run(f'''
-from eel_http import GET, query, Response
+from httpee import GET, query, Response
 page =
     None
     ..query: {{'page': 2}}
@@ -55,7 +55,7 @@ page =
         with TestServer(status=404) as srv:
             with self.assertRaises(MatchError):
                 run(f'''
-from eel_http import GET, Response
+from httpee import GET, Response
 r =
     None
     ..GET: '{srv.url}/missing'
@@ -66,7 +66,7 @@ r =
     def test_assert_binds_variables(self):
         with TestServer() as srv:
             ns = run(f'''
-from eel_http import GET, Response
+from httpee import GET, Response
 r =
     None
     ..GET: '{srv.url}/ok'
@@ -79,7 +79,7 @@ doubled = s * 2
     def test_match_branches_on_status(self):
         with TestServer(status=418) as srv:
             ns = run(f'''
-from eel_http import GET, Response
+from httpee import GET, Response
 verdict =
     None
     ..GET: '{srv.url}/teapot'
@@ -96,7 +96,7 @@ verdict =
     def test_match_fallback_captures_status(self):
         with TestServer(status=503) as srv:
             ns = run(f'''
-from eel_http import GET, Response
+from httpee import GET, Response
 verdict =
     None
     ..GET: '{srv.url}/down'
@@ -111,7 +111,7 @@ verdict =
     def test_send_with_dynamic_method(self):
         with TestServer() as srv:
             ns = run(f'''
-from eel_http import send, method, url, Response
+from httpee import send, method, url, Response
 m = 'PATCH'
 r =
     {{'v': 1}}
@@ -127,7 +127,7 @@ r =
     def test_json_modifier_in_pipeline(self):
         with TestServer() as srv:
             ns = run(f'''
-from eel_http import POST, json, Response
+from httpee import POST, json, Response
 r =
     None
     ..json: {{'nested': [1, 2]}}
@@ -140,7 +140,7 @@ r =
     def test_body_as_initial_value_like_readme(self):
         with TestServer() as srv:
             ns = run(f'''
-from eel_http import GET, headers, Response
+from httpee import GET, headers, Response
 r =
     {{'some': 'json'}}
     ..headers: {{'X-A': '1'}}

@@ -1,17 +1,17 @@
 ---
-id: eel-http-client
+id: httpee-client
 type: goal-and-requirements
-title: eel-http — HTTP-клиент для eelang: запросы пайплайнами
+title: httpee — HTTP-клиент для eelang: запросы пайплайнами
 status: active
 ---
 
-# eel-http — HTTP-клиент для eelang
+# httpee — HTTP-клиент для eelang
 
 Tagline: «HTTP для людей. Теперь пайплайнами.»
 
 ## Цель
 
-eel-http — маленький Python-пакет, обёртка над httpx для eelang: HTTP-запрос пишется
+httpee — маленький Python-пакет, обёртка над httpx для eelang: HTTP-запрос пишется
 одним пайплайном, а результат проверяется паттернами (`..assert:` / `..match:`).
 Пакет живёт в git; на PyPI пока не публикуется.
 
@@ -19,7 +19,7 @@ eel-http — маленький Python-пакет, обёртка над httpx �
 
 Python-разработчик на eelang, который ходит в HTTP-API скриптами. На чистом httpx запрос —
 это развесистый вызов `client.request(method=…, url=…, headers=…, params=…, json=…)`
-плюс отдельные проверки статуса. eel-http сжимает это в одно выражение, где тело,
+плюс отдельные проверки статуса. httpee сжимает это в одно выражение, где тело,
 параметры и проверка читаются сверху вниз.
 
 ## Возможности
@@ -28,7 +28,7 @@ Python-разработчик на eelang, который ходит в HTTP-API
   параметры; глагол выполняет запрос и возвращает `Response`:
 
   ```python
-  from eel_http import GET, POST, headers, query, timeout, cookies, auth, json, Response
+  from httpee import GET, POST, headers, query, timeout, cookies, auth, json, Response
 
   user =
       {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded (как requests data=)

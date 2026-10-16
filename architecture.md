@@ -1,20 +1,20 @@
 ---
-id: eel-http-architecture
+id: httpee-architecture
 type: architecture-design
-title: eel-http — архитектура пакета
+title: httpee — архитектура пакета
 status: active
-parent: eel-http-client
+parent: httpee-client
 ---
 
-# eel-http — архитектура пакета
+# httpee — архитектура пакета
 
-Пакет `eel_http` — тонкая обёртка над httpx: функции-глаголы и функции-модификаторы,
+Пакет `httpee` — тонкая обёртка над httpx: функции-глаголы и функции-модификаторы,
 спроектированные под eelang-пайплайны (`..f(x)` = `f(x, значение)`). Здесь — границы,
-семантика и решения; «что и зачем» — в `eel-http-client`.
+семантика и решения; «что и зачем» — в `httpee-client`.
 
 ## Компоненты
 
-- **`eel_http` (один модуль)** — весь публичный API: глаголы `GET`, `POST`, `PUT`, `PATCH`,
+- **`httpee` (один модуль)** — весь публичный API: глаголы `GET`, `POST`, `PUT`, `PATCH`,
   `DELETE`, `HEAD`, `OPTIONS` и `send`; модификаторы `headers`, `query`, `timeout`, `cookies`,
   `auth`, `json`, `method`, `url`; класс `Response`.
 - **`_Request` (внутренний)** — накапливаемое состояние запроса: `method`, `url`, тело
@@ -53,10 +53,10 @@ parent: eel-http-client
 - **Имена — часть контракта:** глаголы-методы ЗАГЛАВНЫМИ (совпадают с HTTP-методами),
   `send` и модификаторы — строчные английские слова. Изменение имён ломает пайплайны.
 - **Таймаут по умолчанию** — httpx'овский (5 c); `..timeout:` переопределяет на запрос.
-- **Один модуль.** Пакет укладывается в `eel_http/__init__.py`; дробить нечего.
+- **Один модуль.** Пакет укладывается в `httpee/__init__.py`; дробить нечего.
 
 ## Границы
 
 - Зависимость только на httpx; eelang нужен лишь для запуска `.eel`-скриптов.
 - Не поднимает ошибок на 4xx/5xx — это контракт для `..assert`/`..match`.
-- Вне v1: сессии (`..using:`), async, retry, streaming, загрузка файлов — см. `eel-http-client`.
+- Вне v1: сессии (`..using:`), async, retry, streaming, загрузка файлов — см. `httpee-client`.

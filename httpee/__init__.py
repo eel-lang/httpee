@@ -1,9 +1,9 @@
-"""eel-http — HTTP для людей. Теперь пайплайнами.
+"""httpee — HTTP для людей. Теперь пайплайнами.
 
 Тонкая обёртка над httpx для eelang: запрос собирается пайплайном, результат
 проверяется паттернами::
 
-    from eel_http import POST, headers, Response
+    from httpee import POST, headers, Response
 
     user =
         {'name': 'kenneth', 'role': 'admin'}
@@ -59,7 +59,7 @@ def _ensure(value):
 
 
 def _wrap(resp):
-    """httpx.Response → eel_http.Response (для class-паттернов)."""
+    """httpx.Response → httpee.Response (для class-паттернов)."""
     return Response(
         resp.status_code,
         headers=resp.headers,

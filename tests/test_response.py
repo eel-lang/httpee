@@ -3,7 +3,7 @@ import unittest
 
 import httpx
 
-from eel_http import Response
+from httpee import Response
 
 
 class ResponseTests(unittest.TestCase):

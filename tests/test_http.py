@@ -3,7 +3,7 @@ import unittest
 
 import httpx
 
-from eel_http import (GET, POST, PATCH, HEAD, send, headers, query, timeout,
+from httpee import (GET, POST, PATCH, HEAD, send, headers, query, timeout,
                       cookies, auth, json, method, url, Response)
 from tests._server import TestServer
 

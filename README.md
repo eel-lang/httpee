@@ -1,13 +1,13 @@
-# eel-http
+# httpee
 
 **HTTP для людей. Теперь пайплайнами.**
 
-`eel-http` — маленькая обёртка над [httpx](https://www.python-httpx.org/) для
+`httpee` — маленькая обёртка над [httpx](https://www.python-httpx.org/) для
 [eelang](https://github.com/eel-lang/eelang-py): запрос собирается пайплайном, результат проверяется
 паттернами. Никаких развесистых вызовов и отдельных проверок статуса.
 
 ```python
-from eel_http import POST, headers, Response
+from httpee import POST, headers, Response
 
 user =
     {'name': 'kenneth', 'role': 'admin'}      # dict → form-encoded, как requests data=
@@ -27,7 +27,7 @@ page =
 ## Шпаргалка
 
 ```python
-from eel_http import (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, send,
+from httpee import (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, send,
                       headers, query, timeout, cookies, auth, json, method,
                       url, Response)
 from eelang import MatchError
@@ -140,8 +140,14 @@ patch =
 ## Установка
 
 ```sh
-git clone https://github.com/eel-lang/eel_http
-pip install ./eel_http
+pip install httpee
+```
+
+Из исходников:
+
+```sh
+git clone https://github.com/eel-lang/httpee
+pip install ./httpee
 ```
 
 Нужен CPython 3.15 + [eelang](https://github.com/eel-lang/eelang-py) (пакет сам по себе — обычный Python,

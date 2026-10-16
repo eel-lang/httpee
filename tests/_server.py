@@ -1,11 +1,11 @@
-"""Helpers для тестов eel_http."""
+"""Helpers для тестов httpee."""
 import json
 import os
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# eel_http из исходника (репозиторий), не из установленного пакета.
+# httpee из исходника (репозиторий), не из установленного пакета.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
