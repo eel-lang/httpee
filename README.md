@@ -17,13 +17,6 @@ resp =
 
 ## Cheatsheet
 
-```python
-from httpee import (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, send,
-                    httpee, headers, query, timeout, json, data, method,
-                    url, Response)
-from eelang import MatchError
-```
-
 ### A request is a pipeline
 
 ```python
@@ -114,7 +107,8 @@ The method can be set up front — and can be anything:
 httpee()
 ..data: {'role': 'moderator'}
 ..method: 'PATCH'                          # or from a variable
-..url: 'https://api.example.com/users/1'
+..url:
+    'https://api.example.com/users/1'
 ..send()
 ..assert:
     Response(status=200)

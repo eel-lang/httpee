@@ -50,7 +50,8 @@ Python-разработчик на eelang, который ходит в HTTP-API
       httpee()
       ..data: {'role': 'moderator'}           # метод задан заранее — может быть любым
       ..method: 'PATCH'
-      ..url: 'https://api.example.com/users/1'
+      ..url:
+          'https://api.example.com/users/1'
       ..send()
       ..assert:
           Response(status=200)
