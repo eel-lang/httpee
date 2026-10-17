@@ -26,7 +26,7 @@ from collections.abc import Mapping
 
 from . import _fetch
 
-__version__ = "0.2.2"
+__version__ = "0.3.0"
 
 # fetch.py — HTTP-движок (завендорен, MIT © Kenneth Reitz).
 Response = _fetch.Response
