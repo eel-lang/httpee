@@ -1,7 +1,7 @@
-"""Тесты глаголов, модификаторов и send на чистом Python (без eelang)."""
+"""Тесты глаголов, модификаторов и fetch на чистом Python (без eelang)."""
 import unittest
 
-from httpee import (GET, POST, PATCH, HEAD, send, httpee, headers, query,
+from httpee import (GET, POST, PATCH, HEAD, fetch, httpee, headers, query,
                     timeout, json, data, method, url, Response, RequestError,
                     Timeout)
 from tests._server import TestServer
@@ -139,30 +139,30 @@ class ModifierTests(unittest.TestCase):
                 headers({'X': '1'}, r)
 
 
-class SendTests(unittest.TestCase):
+class FetchTests(unittest.TestCase):
     def test_send_with_dynamic_method(self):
         with TestServer() as srv:
             m = 'PATCH'
             v = method(m, data({'v': 1}, httpee()))
             v = url(srv.url + '/thing', v)
-            r = send(v)
+            r = fetch(v)
             self.assertEqual(r.status, 200)
             self.assertEqual(srv.requests[0]['method'], 'PATCH')
             self.assertEqual(srv.requests[0]['body'], 'v=1')
 
     def test_send_defaults_to_get(self):
         with TestServer() as srv:
-            r = send(url(srv.url + '/g', httpee()))
+            r = fetch(url(srv.url + '/g', httpee()))
             self.assertEqual(r.status, 200)
             self.assertEqual(srv.requests[0]['method'], 'GET')
 
     def test_send_without_url_type_error(self):
         with self.assertRaises(TypeError):
-            send(method('POST', httpee()))
+            fetch(method('POST', httpee()))
 
     def test_method_is_uppercased(self):
         with TestServer() as srv:
-            send(url(srv.url + '/u', method('post', httpee())))
+            fetch(url(srv.url + '/u', method('post', httpee())))
             self.assertEqual(srv.requests[0]['method'], 'POST')
 
 

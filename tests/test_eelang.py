@@ -112,14 +112,14 @@ verdict =
     def test_send_with_dynamic_method(self):
         with TestServer() as srv:
             ns = run(f'''
-from httpee import send, data, method, url, httpee, Response
+from httpee import fetch, data, method, url, httpee, Response
 m = 'PATCH'
 r =
     httpee()
     ..data: {{'v': 1}}
     ..method: m
     ..url: '{srv.url}/thing'
-    ..send()
+    ..fetch()
     ..assert:
         Response(status=200)
 ''')
@@ -157,12 +157,12 @@ r =
     def test_bare_pipeline_without_assignment(self):
         with TestServer() as srv:
             run(f'''
-from httpee import send, data, method, url, httpee, Response
+from httpee import fetch, data, method, url, httpee, Response
 httpee()
 ..data: {{'v': 1}}
 ..method: 'PATCH'
 ..url: '{srv.url}/thing'
-..send()
+..fetch()
 ..assert:
     Response(status=200)
 ''')

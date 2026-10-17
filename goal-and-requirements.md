@@ -52,12 +52,12 @@ Python-разработчик на eelang, который ходит в HTTP-API
       ..method: 'PATCH'
       ..url:
           'https://api.example.com/users/1'
-      ..send()
+      ..fetch()
       ..assert:
           Response(status=200)
   ```
 
-- **Глаголы** — `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`; `..send()`
+- **Глаголы** — `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`; `..fetch()`
   выполняет запрос с заранее заданными `..method:`/`..url:` (метод может быть динамическим;
   по умолчанию — GET).
   **Модификаторы** — `headers`, `query`, `timeout`, `json`, `data`, `method`, `url`.

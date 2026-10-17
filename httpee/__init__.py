@@ -113,8 +113,8 @@ HEAD = _verb('HEAD')
 OPTIONS = _verb('OPTIONS')
 
 
-def send(value):
-    """Выполнить запрос с заранее заданными ..method:/..url: (..send())."""
+def fetch(value):
+    """Выполнить запрос с заранее заданными ..method:/..url: (..fetch())."""
     return _execute(_ensure(value))
 
 
@@ -160,20 +160,20 @@ def data(data_value, value):
 
 
 def method(method_value, value):
-    """..method: 'PATCH' — метод заранее; выполняется ..send()."""
+    """..method: 'PATCH' — метод заранее; выполняется ..fetch()."""
     req = _ensure(value)
     req.method = str(method_value).upper()
     return req
 
 
 def url(url_value, value):
-    """..url: 'https://...' — адрес заранее; выполняется ..send()."""
+    """..url: 'https://...' — адрес заранее; выполняется ..fetch()."""
     req = _ensure(value)
     req.url = url_value
     return req
 
 
 __all__ = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS',
-           'send', 'headers', 'query', 'timeout', 'json', 'data', 'method',
+           'fetch', 'headers', 'query', 'timeout', 'json', 'data', 'method',
            'url', 'Response', 'Error', 'RequestError', 'Timeout', 'HTTPError',
            'httpee']

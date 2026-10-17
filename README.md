@@ -71,14 +71,14 @@ They are mutually exclusive — using both raises `ValueError`.
 | `..data:` | str | text (`text/plain; charset=utf-8`) |
 | `..data:` | bytes | raw bytes (`application/octet-stream`) |
 
-### Dynamic method — `..send()`
+### Dynamic method — `..fetch()`
 
 ```python
 httpee()
 ..data: {'role': 'moderator'}
 ..method: m                          # any method, even from a variable
 ..url: 'https://…'
-..send()                             # without ..method: defaults to GET
+..fetch()                             # without ..method: defaults to GET
 ..assert:
     Response(status=200)
 ```
@@ -128,7 +128,7 @@ httpee()
 | Verb | Example | What it does |
 |---|---|---|
 | `GET` … `OPTIONS` | `..GET: url` | performs the request with this method |
-| `send` | `..send()` | performs the request with a previously set `..method:`/`..url:` |
+| `fetch` | `..fetch()` | performs the request with a previously set `..method:`/`..url:` |
 
 The method can be set up front — and can be anything:
 
@@ -138,7 +138,7 @@ httpee()
 ..method: 'PATCH'                          # or from a variable
 ..url:
     'https://api.example.com/users/1'
-..send()
+..fetch()
 ..assert:
     Response(status=200)
 ```
@@ -152,8 +152,8 @@ httpee()
 | `timeout` | `..timeout: 5.0` | request timeout, seconds (default 30) |
 | `json` | `..json: {…}` | JSON body (exclusive with `..data:`) |
 | `data` | `..data: {…}` / `'text'` / `b'…'` | body: mapping → form, str → text, bytes → raw |
-| `method` | `..method: 'PATCH'` | method up front — for `..send()` |
-| `url` | `..url: 'https://…'` | URL up front — for `..send()` |
+| `method` | `..method: 'PATCH'` | method up front — for `..fetch()` |
+| `url` | `..url: 'https://…'` | URL up front — for `..fetch()` |
 
 ## Tests
 

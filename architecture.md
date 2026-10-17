@@ -15,7 +15,7 @@ parent: httpee-client
 ## Компоненты
 
 - **`httpee/__init__.py`** — весь публичный API: глаголы `GET`, `POST`, `PUT`, `PATCH`,
-  `DELETE`, `HEAD`, `OPTIONS` и `send`; модификаторы `headers`, `query`, `timeout`,
+  `DELETE`, `HEAD`, `OPTIONS` и `fetch`; модификаторы `headers`, `query`, `timeout`,
   `json`, `data`, `method`, `url`; `httpee()` — конструктор пустого запроса; `Response`
   и исключения (`Error`/`RequestError`/`Timeout`/`HTTPError`) — реэкспорт из fetch.py.
 - **`httpee/_fetch.py` (вендор)** — fetch.py целиком, без изменений (MIT © Kenneth
@@ -38,7 +38,7 @@ parent: httpee-client
 - **`Response`** — `fetch.Response` (поле `status` уже есть, паттерн `Response(status=200)`
   работает class-паттерном как есть). Остальное — родное: `.json()`, `.text`, `.headers`,
   `.raise_for_status()`.
-- **`..send()`** = `send(значение)`: выполняет запрос с заранее заданными `..method:`
+- **`..fetch()`** = `fetch(значение)`: выполняет запрос с заранее заданными `..method:`
   (по умолчанию GET) и `..url:` (обязателен — без него `TypeError` с внятным сообщением).
   Глагол в конце (`..GET:`) переопределяет ранее заданный метод и выполняет сразу.
 - **4xx/5xx не кидаются** — `check_status=False`; статус проверяет `..assert:`/`..match:`
@@ -54,7 +54,7 @@ parent: httpee-client
 - **Пакет — обычный Python, eelang не импортируется.** Пайплайновость даёт язык на месте
   вызова; внешних зависимостей нет — fetch.py завендорен как `httpee/_fetch.py`.
 - **Имена — часть контракта:** глаголы-методы ЗАГЛАВНЫМИ (совпадают с HTTP-методами),
-  `send` и модификаторы — строчные английские слова. Изменение имён ломает пайплайны.
+  `fetch` и модификаторы — строчные английские слова. Изменение имён ломает пайплайны.
 - **Таймаут по умолчанию** — fetch.py'евский (30 c); `..timeout:` переопределяет на запрос.
 - **Два файла.** `httpee/__init__.py` + вендор `httpee/_fetch.py`; дробить больше нечего.
 
